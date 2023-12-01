@@ -1,31 +1,8 @@
 #!/usr/bin/env python3
 
-import string
-
 def read(fname):
     with open(fname, 'r') as f:
         return f.read().split()
-
-def first_last(it):
-    try:
-        first = next(it)
-    except StopIteration:
-        print(list(it))
-        raise
-    last = first
-    for i in it:
-        last = i
-    return first, last
-
-def calibration_value(digit_iterator):
-    first, last = first_last(digit_iterator)
-    return 10*first + last
-
-def solve_part1(data):
-    return sum(
-        calibration_value(int(s) for s in line if s in string.digits)
-            for line in data
-        )
 
 written_digits = {1: "one",
     2: "two",
@@ -37,23 +14,33 @@ written_digits = {1: "one",
     8: "eight",
     9: "nine"}
 
-def get_digits(s):
+str_digits = {str(x): x for x in written_digits.keys()}
 
-    for i in range(len(s)):
+def part1(letter, suffix):
+    if letter in str_digits:
+        return str_digits[letter]
 
-        if s[i] in string.digits:
-            yield int(s[i])
+def part2(letter, suffix):
+    if letter in str_digits:
+        return str_digits[letter]
 
-        else:
-            for k, v in written_digits.items():
-                if s[i:].startswith(v):
-                    yield k
+    for k, v in written_digits.items():
+        if suffix.startswith(v):
+            return k
 
+def calibration_value(s, get_digit):
+    first = next(d for i in range(len(s))
+            if (d:=get_digit(s[i], s[i:])) is not None
+        )
+    last = next(d for i in range(len(s)-1,-1,-1)
+            if (d:=get_digit(s[i], s[i:])) is not None
+        )
 
-def solve_part2(data):
+    return 10*first + last
+
+def solve(data, part):
     return sum(
-        calibration_value(get_digits(line))
-            for line in data
+        calibration_value(line, part) for line in data
         )
 
 def main():
@@ -61,7 +48,7 @@ def main():
     # data = read("day01_trebuchet/example")
     # data = read("day01_trebuchet/example2")
 
-    return solve_part1(data), solve_part2(data)
+    return solve(data, part1), solve(data, part2)
 
 
 if __name__=="__main__":
