@@ -3,16 +3,12 @@
 from functools import reduce
 from string import digits
 import operator
-from collections import defaultdict
 
 digits = set(digits)
 
 def read(fname):
     with open(fname, 'r') as f:
         return f.read().strip().split()
-
-def valid(x, y, nrows, ncols):
-    return x >= 0 and x < nrows and y >= 0 and y < ncols
 
 def construct_part_number(data, i, j, nrows, ncols):
 
@@ -31,62 +27,44 @@ def construct_part_number(data, i, j, nrows, ncols):
 
     return x, y, s
 
-def neighbours(i, j, nrows, ncols):
-    yield from (
-        (x, y) for x in range(i-1,i+2) for y in range(j-1,j+2)
-            if valid(x, y, nrows, ncols)
-        )
+def construct_part_numbers(data, i, j):
+    nrows = len(data)
+    ncols = len(data[0])
+    for x in range(i-1,i+2):
+        if x >= 0 and x < nrows:
+            for y in range(j-1,j+2):
+                if y >= 0 and y < ncols:
+                    if data[x][y] in digits:
+                        yield construct_part_number(data, x, y, nrows, ncols)
 
-def solve_part1(data):
+def solve(data):
 
-    symbols = set().union(*data)
-    symbols -= digits
+    symbols = set().union(*data) - digits
     symbols.discard('.')
 
-    print("symbols:", symbols)
-
     parts = {}
-
+    total_gears = 0
 
     for i, line in enumerate(data):
         for j, c in enumerate(line):
-            if c in symbols:
-                for nx, ny in neighbours(i, j, len(data), len(line)):
-                    if data[nx][ny] in digits:
-                        x, y, p = construct_part_number(data, nx, ny, len(data), len(line))
-                        parts[(x, y)] = p
+            if c not in symbols:
+                continue
+
+            local_parts = {(x, y): p for x, y, p in construct_part_numbers(data, i, j)}
+
+            if c == "*" and len(local_parts) == 2:
+                total_gears += reduce(operator.mul, local_parts.values())
+
+            parts.update(local_parts)
 
 
-    for k, p in parts.items():
-        print("k, p:", k, p)
-
-    return sum(parts.values())
-
-def solve_part2(data):
-    gears = []
-    for i, line in enumerate(data):
-        for j, c in enumerate(line):
-            if c == '*':
-                parts = {}
-                for nx, ny in neighbours(i, j, len(data), len(line)):
-                    if data[nx][ny] in digits:
-                        x, y, p = construct_part_number(data, nx, ny, len(data), len(line))
-                        parts[(x, y)] = p
-
-                if len(parts) == 2:
-                    gears.append(reduce(operator.mul, parts.values()))
-
-
-    return sum(gears)
+    return sum(parts.values()), total_gears
 
 def main():
     data = read("day03_gear_ratios/input.txt")
     # data = read("day03_gear_ratios/example")
 
-    # for line in data:
-    #     print(line)
-
-    return solve_part1(data), solve_part2(data)
+    return solve(data)
 
 
 if __name__=="__main__":
