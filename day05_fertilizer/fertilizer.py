@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from itertools import chain
+
 def read(fname):
     with open(fname, 'r') as f:
         inp = f.read().strip()
@@ -59,21 +61,13 @@ def translate_range(r, stage, start_index=0):
 
     yield (start, end)
 
-def translate_ranges(rs, stage):
-    # Translate a range, and yield
-    for r in rs:
-        yield from translate_range(r, stage)
-
-def translate_ranges_all(rs, stages):
-
-    if len(stages) == 1:
-        yield from translate_ranges(rs, stages[0])
-
-    else:
-        yield from translate_ranges_all(
-            translate_ranges(rs, stages[0]),
-            stages[1:]
+def translate_ranges(rs, stages):
+    for stage in stages:
+        rs = chain(
+            *(translate_range(r, stage) for r in rs)
             )
+
+    yield from rs
 
 def location(x, maps):
     for stage in maps:
@@ -100,7 +94,7 @@ def solve_part2_ranges(data):
     for si in range(0, len(seeds), 2):
         r = (seeds[si], seeds[si]+seeds[si+1])
 
-        yield from translate_ranges_all([r], maps)
+        yield from translate_ranges([r], maps)
 
 def solve_part2(data):
     return min(r[0] for r in solve_part2_ranges(data))
