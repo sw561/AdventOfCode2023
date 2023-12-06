@@ -1,5 +1,7 @@
 import pytest
-from fertilizer import *
+from fertilizer import read, location,\
+    solve_part1, translate_ranges_all,\
+    solve_part2_brute, solve_part2_ranges, main
 
 data = read("day05_fertilizer/example")
 
@@ -16,29 +18,25 @@ def test_part2_small_ranges():
     for seed in range(100):
         r = (seed, seed+1)
         l = location(seed, maps)
-        count = 0
         r_locs = list(translate_ranges_all([r], maps))
         assert r_locs == [(l, l+1)]
 
 def test_part2_big_range():
     _, maps = data
-    ls = set()
+    locs = set()
     for seed in range(100):
-        ls.add(location(seed, maps))
+        locs.add(location(seed, maps))
 
-    ls_comp = set()
+    locs_comp = set()
     for r_locs in translate_ranges_all([(0, 100)], maps):
         print("r_locs:", r_locs)
         for s in range(*r_locs):
-            ls_comp.add(s)
+            locs_comp.add(s)
 
-    assert ls == ls_comp
-
-def test_part2_brute():
-    assert solve_part2_brute(data) == 46
+    assert locs == locs_comp
 
 def test_part2():
-    locs = set(solve_part2_brute_gen(data))
+    locs = set(solve_part2_brute(data))
 
     locs_comp = set()
     for r in solve_part2_ranges(data):
@@ -46,12 +44,7 @@ def test_part2():
             locs_comp.add(s)
 
     assert locs == locs_comp
-
     assert min(locs) == 46
-
-    assert solve_part2(data) == 46
-
-
 
 @pytest.mark.real
 def test_main():
