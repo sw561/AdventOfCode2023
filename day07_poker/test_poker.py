@@ -1,13 +1,13 @@
 import pytest
-from poker import read, solve_part1, solve_part2, main
+from poker import read, solve, main
 
-data = read("day07_poker/example")
+def test_example():
+    data = read("day07_poker/example")
+    assert solve(data) == (6440, 5905)
 
-def test_part1():
-    assert solve_part1(data) == 6440
-
-def test_part2():
-    assert solve_part2(data) == 5905
+def test_example2():
+    data = read("day07_poker/example2")
+    assert solve(data) == (201, 102)
 
 @pytest.mark.real
 def test_main():
