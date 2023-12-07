@@ -6,9 +6,8 @@ data = read("day07_poker/example")
 def test_part1():
     assert solve_part1(data) == 6440
 
-@pytest.mark.skip(reason="Not implemented")
 def test_part2():
-    assert solve_part2()
+    assert solve_part2(data) == 5905
 
 @pytest.mark.real
 def test_main():
