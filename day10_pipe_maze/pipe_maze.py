@@ -25,13 +25,11 @@ look_up = {
     "F": "SE"
 }
 
-look_up = {k: [directions[d] for d in v] for k, v in look_up.items()}
-
-print(look_up)
+look_up = {k: [(d, *directions[d]) for d in v] for k, v in look_up.items()}
 
 def neighbours(symbol, i, j):
-    for (di, dj) in look_up[symbol]:
-        yield i+di, j+dj
+    for (d, di, dj) in look_up[symbol]:
+        yield d, i+di, j+dj
 
 def calculate_distances(data, i, j):
     start = i, j
@@ -46,7 +44,7 @@ def calculate_distances(data, i, j):
         new_to_consider = []
         for (i, j) in to_consider:
 
-            for (p, q) in neighbours(data[i][j], i, j):
+            for (d, p, q) in neighbours(data[i][j], i, j):
                 if (p, q) in distances:
                     continue
 
@@ -58,23 +56,74 @@ def calculate_distances(data, i, j):
 
     return distances
 
+def calculate_area(data, distances, i, j):
+    start = i, j
+
+    c = {}
+
+    to_consider = [start]
+
+    visited = set()
+    visited.add(start)
+
+    def process(d, p, j):
+        count = sum(1 for jj in range(j) if (p, jj) not in distances)
+        if d == "S":
+            count *= -1
+        c[(p, j)] = count
+
+    last_NS = None
+
+    while to_consider:
+        new_to_consider = []
+        for (i, j) in to_consider:
+
+            for (d, p, q) in neighbours(data[i][j], i, j):
+                if (p, q) in visited:
+                    continue
+
+                if d in "NS":
+                    if last_NS is None or d != last_NS:
+                        process(d, i, j)
+                    process(d, p, j)
+                    last_NS = d
+
+                visited.add((p, q))
+                new_to_consider.append((p, q))
+                break
+
+
+        to_consider = new_to_consider
+
+    return c
+
+
 def solve_part1(data, i, j):
 
     distances = calculate_distances(data, i, j)
 
-    return max(distances.values())
+    c = calculate_area(data, distances, i, j)
 
-def display_chars(data, distances):
+    print(display(data, distances, c))
+
+    return max(distances.values()), abs(sum(c.values()))
+
+def display_chars(data, distances, c):
+    ld = len(str(max(distances.values())))
     for i in range(len(data)):
         for j in range(len(data[0])):
-            if (i, j) in distances:
-                yield str(distances[i, j])
+            if c is not None and (i, j) in c:
+                yield "{0:{1}d}".format(c[i, j], ld)
+            elif c is not None and (i, j) in distances:
+                yield " "*(ld-1) + "-"
+            elif (i, j) in distances:
+                yield "{0:{1}d}".format(distances[i, j], ld)
             else:
-                yield "."
+                yield " "*(ld-1) + "."
         yield "\n"
 
-def display(data, distances):
-    return "".join(display_chars(data, distances))
+def display(data, distances, c=None):
+    return "".join(display_chars(data, distances, c))
 
 def solve_part2(data):
     return 0
@@ -83,8 +132,12 @@ def main():
     data, i, j = read("day10_pipe_maze/input.txt", "7")
     # data, i, j = read("day10_pipe_maze/example", "F")
     # data, i, j = read("day10_pipe_maze/example2", "F")
+    # data, i, j = read("day10_pipe_maze/example3", "F")
+    # data, i, j = read("day10_pipe_maze/example4", "F")
+    # data, i, j = read("day10_pipe_maze/example5", "F")
+    # data, i, j = read("day10_pipe_maze/example6", "7")
 
-    return solve_part1(data, i, j), solve_part2(data)
+    return solve_part1(data, i, j)
 
 
 if __name__=="__main__":

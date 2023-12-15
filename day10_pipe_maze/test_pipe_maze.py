@@ -1,5 +1,5 @@
 import pytest
-from pipe_maze import read, calculate_distances, display, solve_part2, main
+from pipe_maze import read, calculate_distances, display, calculate_area, main
 
 
 @pytest.mark.parametrize("input, s, output",
@@ -8,15 +8,23 @@ from pipe_maze import read, calculate_distances, display, solve_part2, main
      ])
 def test_part1(input, s, output):
     data, i, j = read(input, s)
-    d = calculate_distances(data, i, j)
-    s = display(data, d)
+    distances = calculate_distances(data, i, j)
+    s = display(data, distances)
     with open(output, 'r') as f:
         assert s == f.read()
 
 
-@pytest.mark.skip(reason="Not implemented")
-def test_part2():
-    assert solve_part2()
+@pytest.mark.parametrize("input, s, expected",
+    [("day10_pipe_maze/example3", "F", 4),
+     ("day10_pipe_maze/example4", "F", 4),
+     ("day10_pipe_maze/example5", "F", 8),
+     ("day10_pipe_maze/example6", "7", 10),
+     ])
+def test_part2(input, s, expected):
+    data, i, j = read(input, s)
+    distances = calculate_distances(data, i, j)
+    c = calculate_area(data, distances, i, j)
+    assert abs(sum(c.values())) == expected
 
 @pytest.mark.real
 def test_main():
