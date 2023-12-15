@@ -125,9 +125,6 @@ def display_chars(data, distances, c):
 def display(data, distances, c=None):
     return "".join(display_chars(data, distances, c))
 
-def solve_part2(data):
-    return 0
-
 def main():
     data, i, j = read("day10_pipe_maze/input.txt", "7")
     # data, i, j = read("day10_pipe_maze/example", "F")
