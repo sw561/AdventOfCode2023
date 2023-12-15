@@ -14,7 +14,7 @@ def solve(s):
     i = 0
 
     # display(i, s)
-    while s[-2] != s[-1] or s[-1] != 0:
+    while not all(si == 0 for si in s[i:]):
         for j in range(len(s)-1,i,-1):
             s[j] -= s[j-1]
         i += 1
