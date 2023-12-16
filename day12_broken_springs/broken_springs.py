@@ -42,32 +42,21 @@ def valid_arrangements_brute(s, ns):
 def valid_arrangements(s, ns, d, indent=0):
     # print("-"*indent, "".join(s), ns)
 
-    if len(s) == 0:
-        if len(ns) == 0:
-            # print("Found valid arrangement")
-            return 1
-        else: # len(ns) > 0:
-            return 0
-
-    elif len(ns) == 0:
+    if len(ns) == 0:
         if '#' not in s:
             # print("Found valid arrangement")
             return 1
-        else:
-            return 0
+        return 0
+
+    if len(s) == 0:
+        return 0
 
     ss = "".join(s)
     if (ss, ns) in d:
         return d[(ss, ns)]
 
-    if s[0] == "?":
-        ret = 0
-        s[0] = "#"
-        ret += valid_arrangements(s, ns, d, indent+1)
-        ret += valid_arrangements(s[1:], ns, d, indent+1)
-        # s[0] = "?"
-
-    elif s[0] == "#":
+    ret = 0
+    if s[0] in "#?":
         count_hashes = 1
         while count_hashes < len(s) and (
                 s[count_hashes] == "#" or
@@ -75,14 +64,12 @@ def valid_arrangements(s, ns, d, indent=0):
                 ):
             count_hashes += 1
 
-        if count_hashes != ns[0]:
-            ret = 0
-        else:
+        if count_hashes == ns[0]:
             # Skip the following character independent of whether it's ? or .
-            ret = valid_arrangements(s[count_hashes+1:], ns[1:], d, indent+1)
+            ret += valid_arrangements(s[count_hashes+1:], ns[1:], d, indent+1)
 
-    elif s[0] == ".":
-        ret = valid_arrangements(s[1:], ns, d, indent+1)
+    if s[0] in ".?":
+        ret += valid_arrangements(s[1:], ns, d, indent+1)
 
     d[(ss, ns)] = ret
     return ret
