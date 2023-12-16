@@ -6,9 +6,8 @@ data = read("day16_lasers/example")
 def test_part1():
     assert solve_part1(data) == 46
 
-@pytest.mark.skip(reason="Not implemented")
 def test_part2():
-    assert solve_part2()
+    assert solve_part2(data) == 51
 
 @pytest.mark.real
 def test_main():

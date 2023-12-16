@@ -46,18 +46,11 @@ def display(data, visited, to_consider):
     print("=======================================")
 
 
-def solve_part1(data):
-    # for line in data:
-    #     print(line)
-    # print("=======================================")
-
+def evaluate_energy(data, start):
     # Do BFS but to visit a tile we need to have been there with the same
     # direction as before
 
-    # Start off the edge of the board deliberately
-    start = ('E', 0, -1)
     visited = set()
-
     to_consider = [start]
 
     while to_consider:
@@ -85,8 +78,26 @@ def solve_part1(data):
 
     return len(set((x, y) for (_, x, y) in visited))
 
+
+def solve_part1(data):
+
+    # Start off the edge of the board deliberately
+    start = ('E', 0, -1)
+
+    return evaluate_energy(data, start)
+
+
+def evaluate_all_starting_points(data):
+    for i in range(len(data)):
+        yield evaluate_energy(data, ('E', i, -1))
+        yield evaluate_energy(data, ('W', i, len(data[0])))
+
+    for j in range(len(data[0])):
+        yield evaluate_energy(data, ('S', -1, j))
+        yield evaluate_energy(data, ('N', len(data), j))
+
 def solve_part2(data):
-    return 0
+    return max(evaluate_all_starting_points(data))
 
 def main():
     data = read("day16_lasers/input.txt")
