@@ -6,9 +6,8 @@ data = read("day13_mirrors/example")
 def test_part1():
     assert solve_part1(data) == 405
 
-@pytest.mark.skip(reason="Not implemented")
 def test_part2():
-    assert solve_part2()
+    assert solve_part2(data) == 400
 
 @pytest.mark.real
 def test_main():
