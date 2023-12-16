@@ -4,11 +4,10 @@ from expanding_universe import read, solve_part1, main
 data = read("day11_expanding_universe/example")
 
 def test_part1():
-    assert solve_part1(data) == 374
+    assert solve_part1(data) == [374]
 
 def test_part2():
-    assert solve_part1(data, 9) == 1030
-    assert solve_part1(data, 99) == 8410
+    assert solve_part1(data, [9, 99]) == [1030, 8410]
 
 @pytest.mark.real
 def test_main():
