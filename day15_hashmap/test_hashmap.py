@@ -14,9 +14,8 @@ def test_part1_individual():
 def test_part1():
     assert solve_part1(data) == 1320
 
-@pytest.mark.skip(reason="Not implemented")
 def test_part2():
-    assert solve_part2()
+    assert solve_part2(data) == 145
 
 @pytest.mark.real
 def test_main():

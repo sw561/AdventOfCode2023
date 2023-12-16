@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from collections import defaultdict, OrderedDict
+
 def read(fname):
     with open(fname, 'r') as f:
         return f.read().strip().split(',')
@@ -13,9 +15,31 @@ def my_hash(x):
 def solve_part1(data):
     return sum(map(my_hash, data))
 
-
 def solve_part2(data):
-    return 0
+    boxes = defaultdict(OrderedDict)
+
+    for instruction in data:
+        s_index = max(instruction.find('='), instruction.find('-'))
+
+        label = instruction[:s_index]
+        box = boxes[my_hash(label)]
+
+        if instruction[s_index] == "=":
+            focal_length = int(instruction[s_index+1:])
+            box[label] = focal_length
+
+        else:
+            box.pop(label, None)
+
+        # for i in sorted(boxes.keys()):
+        #     print("i, boxes[i]:", i, boxes[i])
+
+    total_power = 0
+    for box_number, box in boxes.items():
+        for slot, lens in enumerate(box, start=1):
+            total_power += (box_number+1) * slot * box[lens]
+
+    return total_power
 
 def main():
     data = read("day15_hashmap/input.txt")
