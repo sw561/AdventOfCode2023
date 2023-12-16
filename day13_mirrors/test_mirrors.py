@@ -1,13 +1,9 @@
 import pytest
-from mirrors import read, solve_part1, solve_part2, main
+from mirrors import read, solve, main
 
-data = read("day13_mirrors/example")
-
-def test_part1():
-    assert solve_part1(data) == 405
-
-def test_part2():
-    assert solve_part2(data) == 400
+def test_example():
+    data = read("day13_mirrors/example")
+    assert solve(data) == (405, 400)
 
 @pytest.mark.real
 def test_main():

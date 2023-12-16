@@ -7,7 +7,7 @@ def read(fname):
 
     return blocks
 
-def find_reflection(block, part2=False):
+def find_reflection(block):
 
     rocks = set((i, j) for i in range(len(block)) for j in range(len(block[0]))
         if block[i][j] == "#")
@@ -15,49 +15,47 @@ def find_reflection(block, part2=False):
     nR = len(block)
     nC = len(block[0])
 
+    part1 = None
+    part2 = None
+
     for r in range(1, nC):
         c = 2*r - 1
-        # c is 1, 3, ..., 2*nC-3
         ref = set((i, c-j) for (i, j) in rocks if 0 <= c-j < nC)
-        # print(sorted(ref))
-        if not part2 and ref <= rocks:
-            return "V", r
-        elif part2 and len(ref - rocks) == 1:
-            return "V", r
+        if ref <= rocks:
+            part1 = r
+        elif len(ref - rocks) == 1:
+            part2 = r
+
+        if not (part1 is None or part2 is None):
+            return part1, part2
 
     for r in range(1, nR):
         c = 2*r - 1
         ref = set((c-i, j) for (i, j) in rocks if 0 <= c-i < nR)
-        # print(sorted(ref))
-        if not part2 and ref <= rocks:
-            return "H", r
-        elif part2 and len(ref - rocks) == 1:
-            return "H", r
+        if ref <= rocks:
+            part1 = 100*r
+        elif len(ref - rocks) == 1:
+            part2 = 100*r
 
-    import pdb; pdb.set_trace()
+        if not (part1 is None or part2 is None):
+            return part1, part2
 
-
-def solve_part1(data, part2=False):
-    total = 0
+def solve(data):
+    total_p1 = 0
+    total_p2 = 0
     for block in data:
-        s, n = find_reflection(block, part2=part2)
-        if s == "H":
-            total += 100 * n
-        else:
-            assert s == "V"
-            total += n
-        # print("---------")
-    return total
+        p1, p2 = find_reflection(block)
+        total_p1 += p1
+        total_p2 += p2
 
+    return total_p1, total_p2
 
-def solve_part2(data):
-    return solve_part1(data, part2=True)
 
 def main():
     data = read("day13_mirrors/input.txt")
     # data = read("day13_mirrors/example")
 
-    return solve_part1(data), solve_part2(data)
+    return solve(data)
 
 
 if __name__=="__main__":
