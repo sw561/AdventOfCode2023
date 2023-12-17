@@ -6,9 +6,8 @@ data = read("day17_lava_factory/example")
 def test_part1():
     assert solve_part1(data) == 102
 
-@pytest.mark.skip(reason="Not implemented")
 def test_part2():
-    assert solve_part2()
+    assert solve_part2(data) == 94
 
 @pytest.mark.real
 def test_main():

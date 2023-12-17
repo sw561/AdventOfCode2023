@@ -11,6 +11,10 @@ def read(fname):
 new_d = {"E": "NS", "N": "EW", "S": "WE", "W": "SN"}
 
 def possible_directions(d, n):
+    if n > 7:
+        yield d
+        return
+
     if n > 1:
         yield d
 
@@ -43,13 +47,15 @@ def check(data, history):
         print()
 
 
-def solve_part1(data):
+def solve_part1(data, part2=False):
 
     visited = dict()
 
+    max_steps = 10 if part2 else 3
+
     # heat_loss, i, j, direction, number of straight steps allowed
-    start = (0, 0, 0, 'E', 3, ())
-    visited[(0, 0, 'E', 3)] = 0
+    start = (0, 0, 0, 'E', max_steps, ())
+    visited[(0, 0, 'E', max_steps)] = 0
 
     h = []
     heappush(h, start)
@@ -64,7 +70,7 @@ def solve_part1(data):
             if not valid(data, newi, newj):
                 continue
 
-            new_n = n-1 if newd==d else 3
+            new_n = n-1 if newd==d else max_steps
 
             # if (newi, newj) == (0, 9):
             #     import pdb; pdb.set_trace()
@@ -83,7 +89,6 @@ def solve_part1(data):
             if newi == len(data)-1 and newj == len(data[0])-1:
 
                 # check(data, new_history)
-
                 # import pdb; pdb.set_trace()
 
                 return new_hl
@@ -95,18 +100,13 @@ def solve_part1(data):
         # print(h)
         # import pdb; pdb.set_trace()
 
-
-
-
-
-
-
 def solve_part2(data):
-    return 0
+    return solve_part1(data, part2=True)
 
 def main():
     data = read("day17_lava_factory/input.txt")
     # data = read("day17_lava_factory/example")
+    # data = read("day17_lava_factory/example2")
 
     return solve_part1(data), solve_part2(data)
 
