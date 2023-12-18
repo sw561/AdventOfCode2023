@@ -1,13 +1,17 @@
 import pytest
 from lagoon import read, solve_part1, solve_part2, main
 
-data = read("day18_lagoon/example", "DR")
+data = read("day18_lagoon/example")
 
 def test_part1():
     assert solve_part1(data) == 62
 
 def test_part2():
     assert solve_part2(data) == 952408144115
+
+def test_example2():
+    data = read("day18_lagoon/example2")
+    assert solve_part1(data) == 48
 
 @pytest.mark.real
 def test_main():
