@@ -56,13 +56,15 @@ def follow(instructions, location, part):
                 location = i
                 break
 
-            if i[1] == '>':
-                if part[i[0]] > i[2]:
-                    location = i[3]
+            attribute, symbol, threshold, accept_destination = i
+
+            if symbol == '>':
+                if part[attribute] > threshold:
+                    location = accept_destination
                     break
-            elif i[1] == '<':
-                if part[i[0]] < i[2]:
-                    location = i[3]
+            elif symbol == '<':
+                if part[attribute] < threshold:
+                    location = accept_destination
                     break
 
     return location
@@ -93,48 +95,37 @@ def count(four_range):
 
 def all_four_ranges(instructions, literal_instructions, location, four_range):
 
+    while location not in 'AR':
+        print("investigation", location, four_range, literal_instructions[location])
+
+        for i in instructions[location]:
+            if type(i) is str:
+                location = i
+                break
+
+            attribute, symbol, threshold, accept_destination = i
+
+            smin, smax = four_range[attribute]
+            if symbol == '>':
+                accept = (max(threshold+1, smin), smax)
+                reject = (smin, min(threshold, smax))
+            elif symbol == '<':
+                accept = (smin, min(smax, threshold-1))
+                reject = (max(smin, threshold), smax)
+
+            if accept[0] <= accept[1]:
+                nfr_a = four_range[:]
+                nfr_a[attribute] = accept
+                yield from all_four_ranges(instructions, literal_instructions, accept_destination, nfr_a)
+
+            if reject[0] > reject[1]:
+                return
+
+            four_range[attribute] = reject
+
     if location == 'A':
+        print("accepting", four_range)
         yield four_range
-    elif location == 'R':
-        return
-
-    print("investigation", location, four_range, literal_instructions[location])
-
-    for i in instructions[location]:
-
-        if type(i) is str:
-            yield from all_four_ranges(instructions, literal_instructions, i, four_range)
-            break
-
-        nfr_a = four_range[:]
-
-        # print("i:", i)
-        threshold = i[2]
-        smin, smax = four_range[i[0]]
-
-        if i[1] == '>':
-            accept = (max(threshold+1, smin), smax)
-            reject = (smin, min(threshold, smax))
-
-        elif i[1] == '<':
-            accept = (smin, min(smax, threshold-1))
-            reject = (max(smin, threshold), smax)
-        else:
-            raise Exception(f"Unrecognized symbol {i[1]}")
-
-        nfr_a[i[0]] = accept
-        four_range[i[0]] = reject
-
-        if count(nfr_a):
-            yield from all_four_ranges(instructions, literal_instructions, i[3], nfr_a)
-
-        if not count(four_range):
-            return
-
-        else:
-            print("continuing investigation", location, four_range, literal_instructions[location])
-
-
 
 
 def solve_part2(data):
