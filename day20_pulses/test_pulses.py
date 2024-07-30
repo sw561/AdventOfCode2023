@@ -5,12 +5,8 @@ data = read("day20_pulses/example")
 data1 = read("day20_pulses/example1")
 
 def test_part1():
-    assert solve_part1(data) == 8000 * 4000
-    assert solve_part1(data1) == 4250 * 2750
-
-@pytest.mark.skip(reason="Not implemented")
-def test_part2():
-    assert solve_part2()
+    assert solve_part1(data)[0] == 8000 * 4000
+    assert solve_part1(data1)[0] == 4250 * 2750
 
 @pytest.mark.real
 def test_main():

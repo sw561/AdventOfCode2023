@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import deque, defaultdict
+from math import lcm
 
 def read(fname):
     components = dict()
@@ -27,11 +28,6 @@ HIGH = 1
 
 def solve_part1(data):
     components, conjunctions = data
-    # for k, v in components.items():
-    #     if k in conjunctions:
-    #         print("&&&:", k, v, conjunctions[k])
-    #     else:
-    #         print("k, v:", k, v)
 
     memory = dict()
     for comp in components:
@@ -44,25 +40,38 @@ def solve_part1(data):
 
     l, h = 0, 0
 
-    for button_presses in range(1000):
-        # print(button_presses)
-        l, h = process_signals(components, conjunctions, memory, conjunction_memory, l, h)
+    part2 = 'hp' in conjunctions
 
-        # print()
-        # # print("-----------------------")
+    # hp is conjunction node which outputs to rx
+    controllers = {c: None for c in ([] if not part2 else conjunctions['hp'])}
 
-        # print(l, h)
+    button_presses = 0
+    while button_presses < 1000 or (part2 and any(v is None for v in controllers.values())):
+        button_presses += 1
 
-        # print()
+        l, h = process_signals(button_presses, controllers,
+            components, conjunctions,
+            memory, conjunction_memory,
+            l, h)
 
-        # print(memory)
-        # print(conjunction_memory)
+        if button_presses == 1000:
+            part1 = l * h
 
+    if part2:
+        part2 = lcm(*controllers.values())
+        return part1, part2
+    return part1, None
 
-    return l * h
+def process_signals(button_presses,
+        controllers,
+        components,
+        conjunctions,
+        memory,
+        conjunction_memory,
+        lowbies,
+        highbies):
 
-def process_signals(components, conjunctions, memory, conjunction_memory, lowbies, highbies):
-    signals = deque([('button', 'broadcaster', LOW)]) # Use a stack to process signals
+    signals = deque([('button', 'broadcaster', LOW)])
 
     while signals:
         origin, dest, signal = signals.popleft()
@@ -71,7 +80,11 @@ def process_signals(components, conjunctions, memory, conjunction_memory, lowbie
         if dest == "rx" and signal == LOW:
             raise Exception("RX")
 
-        #
+        if dest == "hp" and signal == HIGH:
+            print(button_presses, origin, "-high->" if signal else "-low->", dest)
+            if controllers[origin] is None:
+                controllers[origin] = button_presses
+
         if signal == LOW:
             lowbies += 1
         else:
@@ -95,7 +108,6 @@ def process_signals(components, conjunctions, memory, conjunction_memory, lowbie
 
         else:
             # conjunction
-
             conjunction_memory[dest][origin] = signal
             if all(v == HIGH for v in conjunction_memory[dest].values()):
                 for o in components[dest]:
@@ -113,9 +125,8 @@ def main():
     data = read("day20_pulses/input.txt")
     # data = read("day20_pulses/example")
     # data = read("day20_pulses/example1")
-    # print("-----------------")
 
-    return solve_part1(data), solve_part2(data)
+    return solve_part1(data)
 
 
 if __name__=="__main__":
