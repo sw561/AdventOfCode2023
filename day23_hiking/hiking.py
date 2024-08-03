@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from copy import copy
+from collections import defaultdict
+from string import ascii_letters
 
 def read(fname):
     with open(fname, 'r') as f:
@@ -58,12 +60,18 @@ def dfs(data, starting_position, part2=False):
 
             stack.append((len(route), new_pos))
 
-def display_line(i, line, visited):
+def display_line(i, line, visited, labels):
     for j, char in enumerate(line):
-        yield 'O' if (i, j) in visited else char
+        if (i, j) in visited:
+            if labels is not None and (i, j) in labels:
+                yield labels[(i, j)]
+            else:
+                yield 'O'
+        else:
+            yield char
 
-def display(data, visited):
-    return "\n".join("".join(display_line(i, line, visited)) for i, line in enumerate(data))
+def display(data, visited, labels=None):
+    return "\n".join("".join(display_line(i, line, visited, labels)) for i, line in enumerate(data))
 
 
 def solve_part1(data, part2=False):
@@ -80,15 +88,111 @@ def solve_part1(data, part2=False):
 
     return longest_route
 
+def dfs_part2(edges, starting_position, ending_position):
+    stack = [(0, starting_position, 0)]
+
+    visited = set()
+    route = []
+    route_length = 0
+
+    while stack:
+        (L, next_pos, route_length) = stack.pop()
+
+        # Remove previous exploration
+        while len(route) > L:
+            visited.remove(route.pop())
+
+        visited.add(next_pos)
+        route.append(next_pos)
+
+        for new_pos, distance in edges[next_pos].items():
+            if new_pos == ending_position:
+                yield route, route_length + distance
+
+            if new_pos in visited:
+                continue
+
+            stack.append((len(route), new_pos, route_length + distance))
 
 def solve_part2(data):
-    return solve_part1(data, part2=True)
+    # Start by finding junctions
+
+    starting_position = (0, data[0].find("."))
+    ending_position = (len(data) - 1, data[-1].find("."))
+
+    junctions = set([starting_position, ending_position])
+
+    for i, line in enumerate(data):
+        for j, char in enumerate(line):
+            if char != ".":
+                continue
+
+            s = sum(1 for _ in neighbours_part2(data, i, j))
+
+            if s > 2:
+                junctions.add((i, j))
+
+    labels = {J: letter for J, letter in zip(junctions, ascii_letters)}
+
+    print(display(data, junctions, labels))
+
+    # Find reduced graph by doing path finding from each junction
+
+    edges = defaultdict(dict)
+
+    for junc in junctions:
+
+        for next_pos in neighbours_part2(data, *junc):
+
+            prev_pos = junc
+            pos = next_pos
+            n_steps = 1
+
+            while pos not in junctions:
+                count = 0
+                next_pos = None
+                for n in neighbours_part2(data, *pos):
+                    if n == prev_pos:
+                        continue
+
+                    count += 1
+                    next_pos = n
+
+                assert count == 1
+
+                prev_pos = pos
+                pos = next_pos
+                n_steps += 1
+
+
+            edges[junc][pos] = n_steps
+
+
+    translator = lambda p: labels.get(p, p)
+
+    for k, v in edges.items():
+        print(f"{translator(k)}:", end=" ")
+
+        print("{" + ", ".join(f"{translator(kk)}: {vv}" for kk, vv in v.items()), end="}\n")
+
+    # Now do dfs on the edges we have found
+
+    longest_route = None
+    longest_length = 0
+
+    for r, l in dfs_part2(edges, starting_position, ending_position):
+        # print(l, [labels[p] for p in r])
+        if l > longest_length:
+            longest_route = copy(r)
+            longest_length = l
+
+    return longest_route, longest_length
 
 def main():
     data = read("day23_hiking/input.txt")
     # data = read("day23_hiking/example")
 
-    return len(solve_part1(data)), 0 # len(solve_part2(data))
+    return len(solve_part1(data)), solve_part2(data)[1]
 
 
 if __name__=="__main__":
