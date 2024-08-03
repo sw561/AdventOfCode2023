@@ -30,35 +30,32 @@ def neighbours_part2(data, i, j):
             if data[ii][jj] != '#':
                 yield ii, jj
 
-def dfs(data, starting_position, part2=False):
+def dfs_part1(data, starting_position):
 
     # stack contains (len of route to current pos, next_pos)
 
     stack = [(0, starting_position)]
 
-    neighbours_f = neighbours_part2 if part2 else neighbours_part1
-
-    visited = set()
-    route = []
+    visited = dict()
 
     while stack:
         (L, next_pos) = stack.pop()
 
         # Remove previous exploration
-        while len(route) > L:
-            visited.remove(route.pop())
+        while len(visited) > L:
+            # remove in LIFO order
+            visited.popitem()
 
-        visited.add(next_pos)
-        route.append(next_pos)
+        visited[next_pos] = None
 
-        for new_pos in neighbours_f(data, *next_pos):
+        for new_pos in neighbours_part1(data, *next_pos):
             if new_pos[0] == len(data) - 1:
                 yield visited
 
             if new_pos in visited:
                 continue
 
-            stack.append((len(route), new_pos))
+            stack.append((len(visited), new_pos))
 
 def display_line(i, line, visited, labels):
     for j, char in enumerate(line):
@@ -81,38 +78,24 @@ def solve_part1(data, part2=False):
     longest_route = None
     longest_length = 0
 
-    for r in dfs(data, starting_position, part2=part2):
+    for r in dfs_part1(data, starting_position):
         if len(r) > longest_length:
             longest_route = copy(r)
             longest_length = len(r)
 
     return longest_route
 
-def dfs_part2(edges, starting_position, ending_position):
-    stack = [(0, starting_position, 0)]
+def dfs_part2(edges, position, ending_position, visited, distance):
 
-    visited = set()
-    route = []
-    route_length = 0
+    for new_pos, steps in edges[position].items():
+        if new_pos == ending_position:
+            yield distance + steps
+        if new_pos in visited:
+            continue
 
-    while stack:
-        (L, next_pos, route_length) = stack.pop()
-
-        # Remove previous exploration
-        while len(route) > L:
-            visited.remove(route.pop())
-
-        visited.add(next_pos)
-        route.append(next_pos)
-
-        for new_pos, distance in edges[next_pos].items():
-            if new_pos == ending_position:
-                yield route, route_length + distance
-
-            if new_pos in visited:
-                continue
-
-            stack.append((len(route), new_pos, route_length + distance))
+        visited.add(new_pos)
+        yield from dfs_part2(edges, new_pos, ending_position, visited, distance + steps)
+        visited.remove(new_pos)
 
 def solve_part2(data):
     # Start by finding junctions
@@ -164,7 +147,6 @@ def solve_part2(data):
                 pos = next_pos
                 n_steps += 1
 
-
             edges[junc][pos] = n_steps
 
 
@@ -175,24 +157,17 @@ def solve_part2(data):
 
         print("{" + ", ".join(f"{translator(kk)}: {vv}" for kk, vv in v.items()), end="}\n")
 
+    visited = set()
+    distance = 0
+
     # Now do dfs on the edges we have found
-
-    longest_route = None
-    longest_length = 0
-
-    for r, l in dfs_part2(edges, starting_position, ending_position):
-        # print(l, [labels[p] for p in r])
-        if l > longest_length:
-            longest_route = copy(r)
-            longest_length = l
-
-    return longest_route, longest_length
+    return max(dfs_part2(edges, starting_position, ending_position, set(), 0))
 
 def main():
     data = read("day23_hiking/input.txt")
     # data = read("day23_hiking/example")
 
-    return len(solve_part1(data)), solve_part2(data)[1]
+    return len(solve_part1(data)), solve_part2(data)
 
 
 if __name__=="__main__":

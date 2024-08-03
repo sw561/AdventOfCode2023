@@ -35,8 +35,7 @@ def test_part1():
 
 
 def test_part2():
-    longest_route, longest_length = solve_part2(data)
-    assert longest_length == 154
+    assert solve_part2(data) == 154
 
 @pytest.mark.real
 def test_main():
