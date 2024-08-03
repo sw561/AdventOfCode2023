@@ -25,19 +25,33 @@ def neighbours(data, i, j):
                 if data[ii][jj] != '#':
                     yield ii, jj
 
-def dfs(data, position, visited, route):
+def dfs(data, starting_position):
 
-    for new_pos in neighbours(data, *position):
-        if new_pos[0] == len(data) - 1:
-            yield visited
+    # stack contains (len of route to current pos, next_pos)
 
-        if new_pos in visited:
-            continue
-        visited.add(new_pos)
-        route.append(new_pos)
-        yield from dfs(data, new_pos, visited, route)
-        visited.remove(new_pos)
-        route.pop()
+    stack = [(0, starting_position)]
+
+    visited = set()
+    route = []
+
+    while stack:
+        (L, next_pos) = stack.pop()
+
+        # Remove previous exploration
+        while len(route) > L:
+            visited.remove(route.pop())
+
+        visited.add(next_pos)
+        route.append(next_pos)
+
+        for new_pos in neighbours(data, *next_pos):
+            if new_pos[0] == len(data) - 1:
+                yield visited
+
+            if new_pos in visited:
+                continue
+
+            stack.append((len(route), new_pos))
 
 def display_line(i, line, visited):
     for j, char in enumerate(line):
@@ -49,14 +63,12 @@ def display(data, visited):
 
 def solve_part1(data):
     # Do depth first search
-    position = (0, data[0].find("."))
-    visited = set([position])
-    route = [position]
+    starting_position = (0, data[0].find("."))
 
     longest_route = None
     longest_length = 0
 
-    for r in dfs(data, position, visited, route):
+    for r in dfs(data, starting_position):
         if len(r) > longest_length:
             longest_route = copy(r)
             longest_length = len(r)
@@ -69,7 +81,7 @@ def solve_part2(data):
 
 def main():
     data = read("day23_hiking/input.txt")
-    data = read("day23_hiking/example")
+    # data = read("day23_hiking/example")
 
     return len(solve_part1(data)), solve_part2(data)
 
