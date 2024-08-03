@@ -6,7 +6,7 @@ def read(fname):
     with open(fname, 'r') as f:
         return f.read().strip().split()
 
-def neighbours(data, i, j):
+def neighbours_part1(data, i, j):
     if data[i][j] == ">":
         yield i, j+1
 
@@ -20,16 +20,21 @@ def neighbours(data, i, j):
         yield i-1, j
 
     else:
-        for ii, jj in [(i-1,j), (i+1, j), (i, j-1), (i, j+1)]:
-            if 0 <= ii < len(data) and 0 <= jj < len(data[0]):
-                if data[ii][jj] != '#':
-                    yield ii, jj
+        yield from neighbours_part2(data, i, j)
 
-def dfs(data, starting_position):
+def neighbours_part2(data, i, j):
+    for ii, jj in [(i-1,j), (i+1, j), (i, j-1), (i, j+1)]:
+        if 0 <= ii < len(data) and 0 <= jj < len(data[0]):
+            if data[ii][jj] != '#':
+                yield ii, jj
+
+def dfs(data, starting_position, part2=False):
 
     # stack contains (len of route to current pos, next_pos)
 
     stack = [(0, starting_position)]
+
+    neighbours_f = neighbours_part2 if part2 else neighbours_part1
 
     visited = set()
     route = []
@@ -44,7 +49,7 @@ def dfs(data, starting_position):
         visited.add(next_pos)
         route.append(next_pos)
 
-        for new_pos in neighbours(data, *next_pos):
+        for new_pos in neighbours_f(data, *next_pos):
             if new_pos[0] == len(data) - 1:
                 yield visited
 
@@ -61,14 +66,14 @@ def display(data, visited):
     return "\n".join("".join(display_line(i, line, visited)) for i, line in enumerate(data))
 
 
-def solve_part1(data):
+def solve_part1(data, part2=False):
     # Do depth first search
     starting_position = (0, data[0].find("."))
 
     longest_route = None
     longest_length = 0
 
-    for r in dfs(data, starting_position):
+    for r in dfs(data, starting_position, part2=part2):
         if len(r) > longest_length:
             longest_route = copy(r)
             longest_length = len(r)
@@ -77,13 +82,13 @@ def solve_part1(data):
 
 
 def solve_part2(data):
-    return 0
+    return solve_part1(data, part2=True)
 
 def main():
     data = read("day23_hiking/input.txt")
     # data = read("day23_hiking/example")
 
-    return len(solve_part1(data)), solve_part2(data)
+    return len(solve_part1(data)), 0 # len(solve_part2(data))
 
 
 if __name__=="__main__":
